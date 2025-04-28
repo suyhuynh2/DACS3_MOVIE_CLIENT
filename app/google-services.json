@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1032015684419",
+    "project_id": "testapi-f2823",
+    "storage_bucket": "testapi-f2823.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1032015684419:android:40340505b0390880c845f6",
+        "android_client_info": {
+          "package_name": "com.example.testapi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD05ZR0VwpkBqufQz4462_TUVzHiACTPbc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
