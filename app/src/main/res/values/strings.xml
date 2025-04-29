@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TestApi</string>
+    <string name="default_web_client_id">606007632238-fjhq16i0t3oao67m3ke29nlh8flolkks.apps.googleusercontent.com</string>
 </resources>

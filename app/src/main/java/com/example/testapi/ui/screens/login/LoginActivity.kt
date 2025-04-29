@@ -170,7 +170,7 @@ fun LoginScreen() {
                     fontSize = 12.sp,
                     modifier = Modifier
                         .padding(start = 8.dp)
-                        .weight(1f) // Đảm bảo Text chiếm không gian còn lại
+                        .weight(1f)
                 )
             }
         }

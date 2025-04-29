@@ -1,16 +1,14 @@
 package com.example.testapi.viewmodel
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.testapi.data.Pusher.MoviePusherService
+import com.example.testapi.data.pusher.MoviePusherService
 import com.example.testapi.data.mode_data.Movie
 import com.example.testapi.data.repository.MovieRepository
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 
 class MovieViewModel : ViewModel() {
     private val movieRepository = MovieRepository()

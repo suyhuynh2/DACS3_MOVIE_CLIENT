@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.testapi" />
-                  <option name="mobileSdkAppId" value="1:1032015684419:android:40340505b0390880c845f6" />
-                  <option name="projectId" value="testapi-f2823" />
-                  <option name="projectNumber" value="1032015684419" />
+                  <option name="mobileSdkAppId" value="1:606007632238:android:c8a541873d321c6175217f" />
+                  <option name="projectId" value="laravel-kotlin-ddb72" />
+                  <option name="projectNumber" value="606007632238" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "1032015684419",
-    "project_id": "testapi-f2823",
-    "storage_bucket": "testapi-f2823.firebasestorage.app"
+    "project_number": "606007632238",
+    "project_id": "laravel-kotlin-ddb72",
+    "storage_bucket": "laravel-kotlin-ddb72.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1032015684419:android:40340505b0390880c845f6",
+        "mobilesdk_app_id": "1:606007632238:android:c8a541873d321c6175217f",
         "android_client_info": {
           "package_name": "com.example.testapi"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD05ZR0VwpkBqufQz4462_TUVzHiACTPbc"
+          "current_key": "AIzaSyD3J9wgMiYPnRJYMz_ZFdtGDgfZxEEQY-U"
         }
       ],
       "services": {

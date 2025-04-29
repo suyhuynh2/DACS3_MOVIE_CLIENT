@@ -94,4 +94,6 @@ dependencies {
 
     implementation("com.launchdarkly:okhttp-eventsource:2.3.1")
     implementation ("com.pusher:pusher-java-client:2.4.2")
+
+    implementation("com.google.android.gms:play-services-auth:20.4.0")
 }

@@ -1,10 +1,9 @@
-package com.example.testapi.data.Pusher
+package com.example.testapi.data.pusher
 
 import android.content.Context
 import android.util.Log
 import com.example.testapi.data.api.PusherService
 import com.example.testapi.data.mode_data.Genres
-import com.google.gson.Gson
 import org.json.JSONObject
 
 class GenresPusherService(

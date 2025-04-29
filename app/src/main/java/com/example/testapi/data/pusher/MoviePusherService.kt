@@ -1,4 +1,4 @@
-package com.example.testapi.data.Pusher
+package com.example.testapi.data.pusher
 
 import android.content.Context
 import android.util.Log
