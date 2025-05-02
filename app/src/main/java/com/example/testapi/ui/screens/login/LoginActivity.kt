@@ -1,9 +1,12 @@
 package com.example.testapi.ui.screens.login
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -26,20 +30,50 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.testapi.R
+import com.example.testapi.controller.auth.AuthManager
+import com.example.testapi.firebase.LoginHandler
 import com.example.testapi.ui.components.GradientButtonWithIcon
 import com.example.testapi.ui.components.SystemUIWrapper
+import com.example.testapi.ui.screens.screen.MainScreenActivity
+import com.example.testapi.R
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val authManager = AuthManager(this)
+        val currentUser = authManager.getCurrentUser()
+
+        if (currentUser != null) {
+            // Nếu đã đăng nhập, chuyển thẳng đến MainScreen
+            val loginHandler = LoginHandler(this)
+            loginHandler.handleLogin(currentUser)
+            return
+        }
+
         setContent {
             SystemUIWrapper {
-                LoginScreen(
-
-                )
+                LoginScreen()
             }
         }
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        val authManager = AuthManager(this)
+        val loginHandler = LoginHandler(this)
+
+        authManager.handleActivityResult(
+            requestCode,
+            data,
+            onSuccess = { firebaseUser ->
+                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+                loginHandler.handleLogin(firebaseUser)
+            },
+            onFailure = { error ->
+                Toast.makeText(this, "Lỗi đăng nhập: $error", Toast.LENGTH_LONG).show()
+            }
+        )
     }
 }
 
@@ -51,6 +85,10 @@ fun LoginScreenPreview() {
 
 @Composable
 fun LoginScreen() {
+
+    val context = LocalContext.current
+    val authManager = remember { AuthManager(activity = context as Activity) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -103,7 +141,20 @@ fun LoginScreen() {
                         modifier = Modifier.size(24.dp),
                     )
                 },
-                onClick = {},
+                onClick = {
+                    authManager.signInWithGoogle(
+                        onSuccess = { user ->
+                            val intent = Intent(context, MainScreenActivity::class.java).apply {
+                                putExtra("userName", "user${(1000..9999).random()}")
+                            }
+                            context.startActivity(intent)
+                        },
+                        onFailure = { exception ->
+                            Toast.makeText(context, "Lỗi: $exception", Toast.LENGTH_LONG).show()
+                            Log.e("LoginError", "Đăng nhập thất bại: $exception")
+                        }
+                    )
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 

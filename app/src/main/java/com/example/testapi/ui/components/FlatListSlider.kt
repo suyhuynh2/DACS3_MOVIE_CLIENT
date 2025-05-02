@@ -17,10 +17,10 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.testapi.R
 import com.example.testapi.data.model_component.SlideData
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.example.testapi.R
 
 @Composable
 fun SlideComponentUniversal(

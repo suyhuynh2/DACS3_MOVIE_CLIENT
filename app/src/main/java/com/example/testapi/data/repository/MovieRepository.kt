@@ -1,8 +1,6 @@
 package com.example.testapi.data.repository
 
-import android.util.Log
 import com.example.testapi.data.api.ApiClient
-import com.example.testapi.data.api.ApiClient.apiService
 import com.example.testapi.data.mode_data.Movie
 
 class MovieRepository {

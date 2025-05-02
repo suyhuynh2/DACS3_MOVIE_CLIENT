@@ -1,7 +1,6 @@
 package com.example.testapi.data.api
 
 
-import android.os.Build
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit

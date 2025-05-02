@@ -10,7 +10,6 @@ import com.pusher.client.connection.ConnectionStateChange
 import com.pusher.client.channel.Channel
 import com.pusher.client.channel.SubscriptionEventListener
 import com.pusher.client.channel.PusherEvent
-import org.json.JSONObject
 
 open class PusherService(private val context: Context, private val channelName: String) {
 

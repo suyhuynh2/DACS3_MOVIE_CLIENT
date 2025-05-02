@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">TestApi</string>
-    <string name="default_web_client_id">606007632238-fjhq16i0t3oao67m3ke29nlh8flolkks.apps.googleusercontent.com</string>
+    <string name="default_web_client_id">1032015684419-5ovfu1s1jd8pcmuqv7nmh1igjjcjvpro.apps.googleusercontent.com</string>
+    <string name="facebook_app_id">491178707319175</string>
+    <string name="fb_login_protocol_scheme">fb491178707319175</string>
+    <string name="facebook_client_token">3375a37b18657d7548ea6000deb203f0</string>
 </resources>

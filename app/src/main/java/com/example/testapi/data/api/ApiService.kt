@@ -2,15 +2,11 @@ package com.example.testapi.data.api
 
 import com.example.testapi.data.mode_data.Genres
 import com.example.testapi.data.mode_data.Movie
+import com.example.testapi.data.mode_data.Users
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
-import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.PUT
-import retrofit2.http.Path
 
 interface ApiService {
     //Movie
@@ -21,4 +17,9 @@ interface ApiService {
     //Genres
     @GET("genres-all")
     suspend fun getAllGenres(): Response<List<Genres>?>
+
+    //Users
+    @POST("users")
+    suspend fun createUser(@Body user: Users): Response<Users>
+
 }

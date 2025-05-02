@@ -54,7 +54,6 @@ fun FilmItem(
                         contentDescription = "Poster of $title",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        placeholder = painterResource(R.drawable.poster_1)
                     )
                 }
                 else -> {

@@ -90,10 +90,14 @@ dependencies {
     implementation("com.google.code.gson:gson:2.9.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-    implementation ("org.java-websocket:Java-WebSocket:1.5.2")
+    implementation("org.java-websocket:Java-WebSocket:1.5.2")
 
     implementation("com.launchdarkly:okhttp-eventsource:2.3.1")
-    implementation ("com.pusher:pusher-java-client:2.4.2")
+    implementation("com.pusher:pusher-java-client:2.4.2")
 
     implementation("com.google.android.gms:play-services-auth:20.4.0")
+
+    implementation("com.facebook.android:facebook-android-sdk:16.3.0")
+    implementation("com.facebook.android:facebook-login:16.3.0")
+
 }

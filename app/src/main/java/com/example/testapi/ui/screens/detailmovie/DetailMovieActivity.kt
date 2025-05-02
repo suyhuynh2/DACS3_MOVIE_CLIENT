@@ -21,11 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.testapi.R
 import com.example.testapi.data.mode_data.Comment
 import com.example.testapi.ui.components.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.media3.common.util.UnstableApi
+import com.example.testapi.R
 
 class DetailMovieActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

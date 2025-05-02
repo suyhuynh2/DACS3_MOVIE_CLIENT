@@ -21,8 +21,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.testapi.R
 import com.example.testapi.data.mode_data.Comment
+import com.example.testapi.R
 
 @Composable
 fun SectionComment(comments: List<Comment>, onCommentSubmit: (Comment) -> Unit) {

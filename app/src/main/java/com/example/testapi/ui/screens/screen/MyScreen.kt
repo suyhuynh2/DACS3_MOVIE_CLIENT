@@ -1,13 +1,15 @@
 package com.example.testapi.ui.screens.screen
 
+import android.app.Activity
 import android.content.Intent
-import androidx.compose.foundation.Image
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,20 +17,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.testapi.R
-import com.example.testapi.ui.components.GradientButton
-import com.example.testapi.ui.reponsive.ResponsiveContent
-import com.example.testapi.ui.reponsive.ResponsiveLayoutConfig
+import com.example.testapi.controller.auth.AuthManager
 import com.example.testapi.ui.screens.login.LoginActivity
+import com.example.testapi.R
 
 @Composable
-fun MyScreen() {
-
+fun MyScreen(
+    userName: String
+) {
     val context = LocalContext.current
+    val activity = context as Activity
+    val authManager = remember { AuthManager(activity = activity) }
+    val isLoggedIn = authManager.getCurrentUser() != null
 
     Box(
         modifier = Modifier
@@ -48,7 +50,7 @@ fun MyScreen() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Người dùng",
+                    text = userName,
                     color = Color.White,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
@@ -104,7 +106,6 @@ fun MyScreen() {
                             )
                         }
                     }
-
                 }
             }
             // Menu items
@@ -181,13 +182,21 @@ fun MyScreen() {
                 }
             )
             MenuItem(
-                title = "Đăng nhập",
+                title = if (isLoggedIn) "Đăng xuất" else "Đăng nhập",
                 onClick = {
-                    context.startActivity(Intent(context, LoginActivity::class.java))
+                    if (isLoggedIn) {
+                        authManager.signOut {
+                            Toast.makeText(context, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show()
+                            context.startActivity(Intent(context, LoginActivity::class.java))
+                            activity.finish() // Close MainScreenActivity
+                        }
+                    } else {
+                        context.startActivity(Intent(context, LoginActivity::class.java))
+                    }
                 },
                 icon = {
                     Icon(
-                        painter = painterResource(id = R.drawable.login),
+                        painter = painterResource(id = if (isLoggedIn) R.drawable.logout else R.drawable.login),
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(20.dp)
@@ -230,13 +239,5 @@ fun MenuItem(
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 800)
-@Composable
-fun MyScreenPreview() {
-    ResponsiveContent { config, layoutConfig ->
-        MyScreen()
     }
 }
