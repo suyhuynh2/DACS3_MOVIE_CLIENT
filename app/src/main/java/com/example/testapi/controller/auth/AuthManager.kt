@@ -74,7 +74,6 @@ class AuthManager(private val activity: Activity) {
                 activity.runOnUiThread(onComplete)
             }
         } catch (e: Exception) {
-            // Log error but still call onComplete to ensure UI updates
             android.util.Log.e("AuthManager", "Sign out failed: ${e.message}")
             activity.runOnUiThread(onComplete)
         }

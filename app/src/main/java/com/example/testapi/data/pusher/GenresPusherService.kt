@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.example.testapi.data.api.PusherService
 import com.example.testapi.data.mode_data.Genres
+import com.example.testapi.data.mode_data.Users
 import org.json.JSONObject
 
 class GenresPusherService(
@@ -35,4 +36,5 @@ class GenresPusherService(
             }
         }
     }
+
 }

@@ -13,8 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.testapi.R
+import com.example.testapi.data.model_component.BottomMenuItem
 import com.example.testapi.data.model_component.Screen
 
 @Composable
@@ -55,36 +57,32 @@ fun BottomNavigationBar(
                 label = {
                     Text(
                         text = bottomMenuItem.label,
-                        modifier = Modifier.padding(top = 16.dp)
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 },
+                selectedContentColor = colorResource(id = R.color.white),
+                unselectedContentColor = colorResource(id = R.color.gray),
                 alwaysShowLabel = true,
                 enabled = true
             )
+
         }
     }
 }
-
-
-data class BottomMenuItem(
-    val label: String,
-    val icon: Painter
-)
 
 @Composable
 fun prepareButtomMenu(): List<BottomMenuItem> {
     return listOf(
         BottomMenuItem(
-            label = "Home",
+            label = "Trang chủ",
             icon = painterResource(id = R.drawable.btn_1)
         ),
         BottomMenuItem(
             label = "Phim",
             icon = painterResource(id = R.drawable.grid_view)
-        ),
-        BottomMenuItem(
-            label = "Support",
-            icon = painterResource(id = R.drawable.btn_3)
         ),
         BottomMenuItem(
             label = "Tôi",

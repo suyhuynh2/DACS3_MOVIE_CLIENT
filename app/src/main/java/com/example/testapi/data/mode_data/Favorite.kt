@@ -4,7 +4,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Favorite(
-    var favorite_id: Int,
+    var favorite_id: Int? = null,
     var movie_id: Int,
-    val firebase_uid: Int,
+    val firebase_uid: String,
+)
+
+data class CheckFavoriteResponse(
+    val is_favorite: Boolean
 )

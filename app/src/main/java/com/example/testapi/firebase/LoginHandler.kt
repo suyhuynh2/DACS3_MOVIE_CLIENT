@@ -22,6 +22,16 @@ class LoginHandler(private val context: Context) {
             val result = usersRepository.createUser(userRequest)
 
             result.onSuccess { userResponse ->
+                val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                with(sharedPreferences.edit()) {
+                    putString("user_id", userResponse.firebase_uid)
+                    putString("user_name", userResponse.name)
+                    putString("user_email", user.email)
+                    putString("user_role", userResponse.role)
+                    putString("user_provider", userResponse.provider)
+                    apply()
+                }
+
                 val name = userResponse.name
                 Toast.makeText(context, "Xin chào $name!", Toast.LENGTH_SHORT).show()
 
@@ -36,4 +46,3 @@ class LoginHandler(private val context: Context) {
         }
     }
 }
-

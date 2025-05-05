@@ -1,5 +1,7 @@
 package com.example.testapi.data.api
 
+import com.example.testapi.data.mode_data.CheckFavoriteResponse
+import com.example.testapi.data.mode_data.Favorite
 import com.example.testapi.data.mode_data.Genres
 import com.example.testapi.data.mode_data.Movie
 import com.example.testapi.data.mode_data.Users
@@ -7,6 +9,8 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface ApiService {
     //Movie
@@ -21,5 +25,28 @@ interface ApiService {
     //Users
     @POST("users")
     suspend fun createUser(@Body user: Users): Response<Users>
+
+    @PUT("users/{firebase_uid}")
+    suspend fun updateUser(
+        @Path("firebase_uid") firebaseUid: String,
+        @Body user: Users
+    ): Response<Users>
+
+    @POST("add-favorite")
+    suspend fun addFavorite(@Body favorite: Favorite): Response<Unit>
+
+    @POST("remove-favorite")
+    suspend fun removeFavorite(@Body favorite: Favorite): Response<Unit>
+
+    @GET("check-favorite/{firebase_uid}/{movie_id}")
+    suspend fun checkFavorite(
+        @Path("firebase_uid") firebaseUid: String,
+        @Path("movie_id") movieId: Int
+    ): Response<CheckFavoriteResponse>
+
+    @GET("get-favorite/{firebase_uid}")
+    suspend fun getFavoritesByUser(
+        @Path("firebase_uid") firebaseUid: String
+    ): Response<List<Favorite>?>
 
 }

@@ -38,7 +38,6 @@ class MainScreenActivity : ComponentActivity() {
 @Preview(showBackground = true, widthDp = 360, heightDp = 800)
 fun MainScreen() {
     val context = LocalContext.current
-    val userName = (context as? Activity)?.intent?.getStringExtra("userName") ?: "Người dùng"
 
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
     Scaffold(
@@ -58,7 +57,7 @@ fun MainScreen() {
         ) {
             when (currentScreen) {
                 Screen.Home -> HomeScreen()
-                Screen.Profile -> MyScreen(userName)
+                Screen.Profile -> MyScreen()
                 Screen.MenuMovie -> MenuMovieScreen()
             }
         }

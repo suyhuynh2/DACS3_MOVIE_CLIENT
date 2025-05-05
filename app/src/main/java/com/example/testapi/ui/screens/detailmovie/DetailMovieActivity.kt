@@ -1,6 +1,7 @@
 package com.example.testapi.ui.screens.detailmovie
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -16,15 +17,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.testapi.data.mode_data.Comment
 import com.example.testapi.ui.components.*
 import androidx.media3.common.util.UnstableApi
 import com.example.testapi.R
+import com.example.testapi.viewmodel.DetailMovieViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 class DetailMovieActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,7 +79,20 @@ fun DetailMovieScreen(
     genres: String?,
     poster_url: String?
 ) {
+
+    val viewModel: DetailMovieViewModel = viewModel()
+    val isFavorite by viewModel.isFavorite.collectAsState()
+
     val scrollState = rememberScrollState()
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val context = LocalContext.current
+    val activity = (context as? ComponentActivity)
+
+    LaunchedEffect(movie_id, currentUser) {
+        currentUser?.uid?.let { uid ->
+            viewModel.checkFavorite(uid, movie_id)
+        }
+    }
 
     Column( // Sử dụng Column thay cho LazyColumn để đảm bảo nội dung không bị tràn
         modifier = Modifier
@@ -97,7 +115,7 @@ fun DetailMovieScreen(
 
             // Nút quay lại
             IconButton(
-                onClick = { /* TODO: Back */ },
+                onClick = { activity?.finish() },
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(start = 12.dp, top = 25.dp)
@@ -112,20 +130,34 @@ fun DetailMovieScreen(
 
             // Nút yêu thích
             IconButton(
-                onClick = { /* TODO: Favorite */ },
+                onClick = {
+                    currentUser?.uid?.let { uid ->
+                        if (isFavorite) {
+                            viewModel.removeFavorite(uid, movie_id)
+                        } else {
+                            viewModel.addFavorite(uid, movie_id)
+                        }
+                    } ?: run {
+                        Toast.makeText(context, "Bạn cần đăng nhập để yêu thích", Toast.LENGTH_SHORT).show()
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(end = 12.dp, top = 25.dp)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.baseline_favorite_border_24),
+                    painter = painterResource(
+                        id = if (isFavorite)
+                            R.drawable.fav
+                        else
+                            R.drawable.baseline_favorite_border_24
+                    ),
                     contentDescription = "Favorite",
                     tint = Color.White,
                     modifier = Modifier.size(28.dp)
                 )
             }
         }
-
         // Tiêu đề, đánh giá và icon play
         Row(
             modifier = Modifier

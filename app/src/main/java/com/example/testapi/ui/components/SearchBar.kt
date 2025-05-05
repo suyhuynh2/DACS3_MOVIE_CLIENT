@@ -20,11 +20,14 @@ import com.example.testapi.R
 
 @Composable
 @Preview(showBackground = true)
-fun SearchBar(hint: String = "") {
+fun SearchBar(
+    hint: String = "",
+    modifier: Modifier = Modifier
+    ) {
     var text by remember { mutableStateOf("") }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .height(40.dp)
