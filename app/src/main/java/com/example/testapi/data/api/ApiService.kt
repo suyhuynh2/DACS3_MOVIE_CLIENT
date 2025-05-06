@@ -4,6 +4,7 @@ import com.example.testapi.data.mode_data.CheckFavoriteResponse
 import com.example.testapi.data.mode_data.Favorite
 import com.example.testapi.data.mode_data.Genres
 import com.example.testapi.data.mode_data.Movie
+import com.example.testapi.data.mode_data.Rating
 import com.example.testapi.data.mode_data.Users
 import retrofit2.Response
 import retrofit2.http.Body
@@ -32,6 +33,7 @@ interface ApiService {
         @Body user: Users
     ): Response<Users>
 
+    //Favorite
     @POST("add-favorite")
     suspend fun addFavorite(@Body favorite: Favorite): Response<Unit>
 
@@ -48,5 +50,13 @@ interface ApiService {
     suspend fun getFavoritesByUser(
         @Path("firebase_uid") firebaseUid: String
     ): Response<List<Favorite>?>
+
+
+    //Rating
+    @POST("add-rating")
+    suspend fun addRating(@Body rating: Rating): Response<Unit>
+
+    @GET("all-rating/{movie_id}")
+    suspend fun getRatingsByMovie(@Path("movie_id") movieId: Int): Response<List<Rating>?>
 
 }

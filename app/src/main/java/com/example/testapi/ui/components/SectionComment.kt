@@ -6,11 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,13 +17,33 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.testapi.data.mode_data.Comment
 import com.example.testapi.R
+import com.example.testapi.data.mode_data.Rating
+import com.example.testapi.viewmodel.DetailMovieViewModel
 
 @Composable
-fun SectionComment(comments: List<Comment>, onCommentSubmit: (Comment) -> Unit) {
+fun SectionComment(
+    ratings: List<Rating>,
+    movie_id: Int,
+    firebase_uid: String?,
+    username: String,
+    onCommentSubmit: (Rating) -> Unit,
+    viewModel: DetailMovieViewModel // Thêm viewModel vào đây
+) {
     var commentText by remember { mutableStateOf(TextFieldValue()) }
-    var rating by remember { mutableStateOf(3) }
+    var ratingScore by remember { mutableStateOf(3) }
+
+    // Lắng nghe trạng thái khi gửi thành công
+    val ratingSuccess by viewModel.ratingSuccess.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
+    // Cập nhật lại danh sách đánh giá nếu gửi thành công
+    LaunchedEffect(ratingSuccess) {
+        if (ratingSuccess == true) {
+            // Gọi lại fetchRatings để tải lại danh sách đánh giá mới
+            viewModel.fetchRatings(movie_id)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -35,7 +51,6 @@ fun SectionComment(comments: List<Comment>, onCommentSubmit: (Comment) -> Unit) 
             .fillMaxWidth()
             .background(Color.Black)
     ) {
-        // Box chứa danh sách bình luận với thanh cuộn
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -47,26 +62,22 @@ fun SectionComment(comments: List<Comment>, onCommentSubmit: (Comment) -> Unit) 
             LazyColumn(
                 modifier = Modifier.padding(12.dp)
             ) {
-                items(comments) { comment ->
+                items(ratings) { rating ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.Top
                     ) {
-                        // Tên người dùng và số sao
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "${comment.firebase_uid} - ${comment.rating} ★",
+                                text = "${rating.username} - ${rating.score} ★",
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.Yellow,
                                 fontSize = 16.sp
                             )
                             Text(
-                                text = comment.content,
+                                text = rating.comment ?: "",
                                 color = Color.White,
                                 fontSize = 14.sp,
                                 maxLines = 3,
@@ -80,13 +91,13 @@ fun SectionComment(comments: List<Comment>, onCommentSubmit: (Comment) -> Unit) 
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Phần chọn số sao
         Text(
             text = "Đánh giá của bạn",
             color = Color.White,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
         )
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,10 +105,10 @@ fun SectionComment(comments: List<Comment>, onCommentSubmit: (Comment) -> Unit) 
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             for (i in 1..5) {
-                IconButton(onClick = { rating = i }) {
+                IconButton(onClick = { ratingScore = i }) {
                     Icon(
                         painter = painterResource(
-                            if (i <= rating) R.drawable.star else R.drawable.border_star
+                            if (i <= ratingScore) R.drawable.star else R.drawable.border_star
                         ),
                         contentDescription = null,
                         tint = Color(0xFFFFC107),
@@ -109,7 +120,6 @@ fun SectionComment(comments: List<Comment>, onCommentSubmit: (Comment) -> Unit) 
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Phần nhập bình luận và nút gửi
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -123,8 +133,23 @@ fun SectionComment(comments: List<Comment>, onCommentSubmit: (Comment) -> Unit) 
                     .padding(end = 12.dp)
                     .height(40.dp)
             )
+
             Button(
-                onClick = {},
+                onClick = {
+                    if (!commentText.text.isNullOrBlank() && firebase_uid != null) {
+                        val newRating = Rating(
+                            movie_id = movie_id,
+                            firebase_uid = firebase_uid,
+                            score = ratingScore,
+                            comment = commentText.text,
+                            username = username
+                        )
+                        // Gửi đánh giá lên server
+                        viewModel.addRating(firebase_uid, movie_id, ratingScore, commentText.text)
+                        commentText = TextFieldValue("") // Làm trống trường nhập
+                        ratingScore = 3 // Reset điểm đánh giá
+                    }
+                },
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFFFC107),
@@ -139,5 +164,17 @@ fun SectionComment(comments: List<Comment>, onCommentSubmit: (Comment) -> Unit) 
                 )
             }
         }
+
+        // Hiển thị lỗi nếu có
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = Color.Red,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
     }
 }
+
+

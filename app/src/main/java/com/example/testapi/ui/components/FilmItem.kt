@@ -33,6 +33,13 @@ fun FilmItem(
     averageRating: Float? = null,
     onClick: (Int) -> Unit = {} // Thêm onClick với movie_id
 ) {
+
+    val statusLabel = if (status == "1") "VIP" else "Free"
+    val statusColor = if (status == "1")
+        Color.Yellow.copy(alpha = 0.5f)
+    else
+        Color.Blue.copy(alpha = 0.5f)
+
     Column(
         modifier = modifier
             .width(130.dp)
@@ -76,13 +83,13 @@ fun FilmItem(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .background(
-                            color = if (it == "Free") Color.Blue.copy(alpha = 0.3f) else Color.Yellow.copy(alpha = 0.5f),
+                            color = statusColor,
                             shape = RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = it,
+                        text = statusLabel,
                         color = Color.White,
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold
@@ -93,7 +100,8 @@ fun FilmItem(
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .background(Color.Black.copy(alpha = 0.4f), shape = RoundedCornerShape(4.dp))
+                        .background(
+                            Color.Black.copy(alpha = 0.4f), shape = RoundedCornerShape(4.dp))
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(

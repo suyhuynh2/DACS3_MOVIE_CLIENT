@@ -99,16 +99,11 @@ fun HomeScreen(viewModel: MovieViewModel = viewModel()) {
                             items = movieList,
                             key = { movie: Movie -> movie.movie_id }
                         ) { movie: Movie ->
-                            val movieStatus = when (movie.status.toIntOrNull()) {
-                                1 -> "VIP"
-                                else -> "FREE"
-                            }
-
                             FilmItem(
                                 movie_id = movie.movie_id,
                                 title = movie.title,
                                 poster_url = movie.poster_url,
-                                status = movieStatus,
+                                status = movie.status,
                                 averageRating = movie.averageRating ?: 0f,
                                 onClick = {
                                     val intent = Intent(context, DetailMovieActivity::class.java).apply {

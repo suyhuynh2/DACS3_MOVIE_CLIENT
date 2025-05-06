@@ -24,7 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.testapi.data.mode_data.Comment
+import com.example.testapi.data.mode_data.Rating
 import com.example.testapi.ui.components.*
 import androidx.media3.common.util.UnstableApi
 import com.example.testapi.R
@@ -84,9 +84,18 @@ fun DetailMovieScreen(
     val isFavorite by viewModel.isFavorite.collectAsState()
 
     val scrollState = rememberScrollState()
-    val currentUser = FirebaseAuth.getInstance().currentUser
     val context = LocalContext.current
     val activity = (context as? ComponentActivity)
+
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val firebase_uid = currentUser?.uid
+    val username = currentUser?.displayName ?: "Ẩn danh"
+
+    val ratings by viewModel.ratings.collectAsState()
+
+    LaunchedEffect(movie_id) {
+        viewModel.fetchRatings(movie_id)
+    }
 
     LaunchedEffect(movie_id, currentUser) {
         currentUser?.uid?.let { uid ->
@@ -244,14 +253,16 @@ fun DetailMovieScreen(
 
         // Bình luận & Đánh giá
         SectionTitle(title = "Bình luận & Đánh giá")
-        val comments = remember {
-            mutableStateListOf(
-                Comment(comment_id = 1, firebase_uid = "Linda", movie_id = 123, content = "Phim rất hay!", rating = 5),
-                Comment(comment_id = 2, firebase_uid = "Perter", movie_id = 123, content = "Hiệu ứng đỉnh cao.", rating = 4)
-            )
-        }
-        SectionComment(comments = comments) { newComment ->
-            comments.add(newComment)
-        }
+
+        SectionComment(
+            ratings = ratings,
+            movie_id = movie_id,
+            firebase_uid = firebase_uid,
+            username = username,
+            onCommentSubmit = { newRating ->
+                viewModel.addRating(firebase_uid ?: "", movie_id, newRating.score, newRating.comment ?: "")
+            },
+            viewModel = viewModel
+        )
     }
 }
