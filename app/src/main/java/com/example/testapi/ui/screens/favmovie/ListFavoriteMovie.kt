@@ -25,7 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.testapi.ui.components.BigTitle
-import com.example.testapi.ui.components.CardMovie
+import com.example.testapi.ui.components.CardFavMovie
 import com.example.testapi.ui.components.SearchBar
 import com.example.testapi.ui.components.SystemUIWrapper
 import com.example.testapi.viewmodel.ListFavoriteViewModel
@@ -129,7 +129,7 @@ fun ListFavoriteMovieScreen() {
             } else {
                 items(filteredMovies) { movie ->
                     Column {
-                        CardMovie(
+                        CardFavMovie(
                             title = movie.title,
                             genres = movie.genres?.joinToString(", ") { it.name } ?: "",
                             duration = movie.duration,

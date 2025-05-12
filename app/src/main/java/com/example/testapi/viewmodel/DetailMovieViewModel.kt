@@ -3,19 +3,31 @@ package com.example.testapi.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.testapi.data.mode_data.Favorite
+import com.example.testapi.data.mode_data.History
 import com.example.testapi.data.mode_data.Rating
 import com.example.testapi.data.repository.FavoriteRepository
+import com.example.testapi.data.repository.HistoryRepository
 import com.example.testapi.data.repository.RatingRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class DetailMovieViewModel: ViewModel() {
     private val favoriteRepository = FavoriteRepository()
     private val ratingRepository = RatingRepository()
+    private val historyRepository = HistoryRepository()
 
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite: StateFlow<Boolean> = _isFavorite
+
+    private val _isHistory = MutableStateFlow(false)
+    val isHistory: StateFlow<Boolean> = _isHistory
+
+    private val _historyProgress = MutableStateFlow<String?>(null)
+    val historyProgress: StateFlow<String?> = _historyProgress
 
     private val _ratings = MutableStateFlow<List<Rating>>(emptyList())
     val ratings: StateFlow<List<Rating>> = _ratings
@@ -90,4 +102,48 @@ class DetailMovieViewModel: ViewModel() {
             }
         }
     }
+
+    fun addHistory(firebaseUid: String, movieId: Int, progress: String){
+        viewModelScope.launch {
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            val currentTime = dateFormat.format(Date())
+
+            val result = historyRepository.addHistory(
+                History(
+                    firebase_uid = firebaseUid,
+                    movie_id = movieId,
+                    progress = progress,
+                    watched_at = currentTime
+                )
+            )
+            if (!result.isSuccess) {
+                _errorMessage.value = result.exceptionOrNull()?.message
+            }
+        }
+    }
+
+    fun checkHistory(firebaseUid: String, movieId: Int) {
+        viewModelScope.launch {
+            val result = historyRepository.checkHistory(firebaseUid, movieId)
+            if (result.isSuccess) {
+                _isHistory.value = result.getOrNull() ?: false
+            } else {
+                _errorMessage.value = result.exceptionOrNull()?.message
+            }
+        }
+    }
+
+    fun fetchHistory(firebaseUid: String, movieId: Int) {
+        viewModelScope.launch {
+            val result = historyRepository.getInfoHistory(firebaseUid, movieId)
+            if (result.isSuccess) {
+                val history = result.getOrNull()
+                _isHistory.value = history != null
+                _historyProgress.value = history?.progress
+            } else {
+                _errorMessage.value = result.exceptionOrNull()?.message
+            }
+        }
+    }
+
 }

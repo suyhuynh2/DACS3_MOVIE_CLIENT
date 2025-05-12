@@ -110,6 +110,7 @@ fun HomeScreen(viewModel: MovieViewModel = viewModel()) {
                                         putExtra("movie_id", movie.movie_id)
                                         putExtra("title", movie.title)
                                         putExtra("trailer_url", movie.trailer_url)
+                                        putExtra("video_url", movie.video_url)
                                         putExtra("poster_url", movie.poster_url)
                                         putExtra("status", movie.status)
                                         putExtra("averageRating", movie.averageRating ?: 0f)

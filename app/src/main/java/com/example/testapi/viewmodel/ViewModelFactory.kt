@@ -1,4 +1,4 @@
-// ListFavoriteViewModelFactory.kt
+// ViewModelFactory.kt
 package com.example.testapi.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -10,6 +10,17 @@ class ListFavoriteViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ListFavoriteViewModel::class.java)) {
             return ListFavoriteViewModel(firebaseUid) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+class ListHistoryViewModelFactory(
+    private val firebaseUid: String
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(ListHistoryViewModel::class.java)) {
+            return ListHistoryViewModel(firebaseUid) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -8,14 +8,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -24,9 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.testapi.data.mode_data.Rating
 import com.example.testapi.ui.components.*
-import androidx.media3.common.util.UnstableApi
 import com.example.testapi.R
 import com.example.testapi.viewmodel.DetailMovieViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -37,6 +35,7 @@ class DetailMovieActivity : ComponentActivity() {
 
         val movie_id = intent.getIntExtra("movie_id", 0)
         val title = intent.getStringExtra("title")
+        val video_url = intent.getStringExtra("video_url")
         val trailer_url = intent.getStringExtra("trailer_url")
         val status = intent.getStringExtra("status")
         val averageRating = intent.getFloatExtra("averageRating", 0f)
@@ -52,6 +51,7 @@ class DetailMovieActivity : ComponentActivity() {
                     movie_id = movie_id,
                     title = title,
                     trailer_url = trailer_url,
+                    video_url = video_url,
                     status = status,
                     averageRating = averageRating,
                     description = description,
@@ -71,6 +71,7 @@ fun DetailMovieScreen(
     movie_id: Int,
     title: String?,
     trailer_url: String?,
+    video_url: String?,
     status: String?,
     averageRating: Float?,
     description: String?,
@@ -79,50 +80,93 @@ fun DetailMovieScreen(
     genres: String?,
     poster_url: String?
 ) {
-
     val viewModel: DetailMovieViewModel = viewModel()
     val isFavorite by viewModel.isFavorite.collectAsState()
-
+    val isHistory by viewModel.isHistory.collectAsState()
+    val historyProgress by viewModel.historyProgress.collectAsState()
+    val ratings by viewModel.ratings.collectAsState()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-    val activity = (context as? ComponentActivity)
-
+    val activity = context as? ComponentActivity
     val currentUser = FirebaseAuth.getInstance().currentUser
     val firebase_uid = currentUser?.uid
     val username = currentUser?.displayName ?: "Ẩn danh"
 
-    val ratings by viewModel.ratings.collectAsState()
+    var isPlayingVideo by remember { mutableStateOf(false) }
+    var showContinueDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(movie_id) {
         viewModel.fetchRatings(movie_id)
     }
 
+
+    LaunchedEffect(movie_id, currentUser) {
+        currentUser?.uid?.let { uid -> viewModel.checkFavorite(uid, movie_id) }
+    }
+
     LaunchedEffect(movie_id, currentUser) {
         currentUser?.uid?.let { uid ->
-            viewModel.checkFavorite(uid, movie_id)
+            viewModel.fetchHistory(uid, movie_id)
         }
     }
 
-    Column( // Sử dụng Column thay cho LazyColumn để đảm bảo nội dung không bị tràn
+    if (showContinueDialog) {
+        AlertDialog(
+            onDismissRequest = { showContinueDialog = false },
+            title = { Text("Tiếp tục xem?") },
+            text = { Text("Bạn đã xem đến $historyProgress. Bạn có muốn tiếp tục từ vị trí này?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showContinueDialog = false
+                        isPlayingVideo = true // Chuyển sang chế độ phát video
+                    }
+                ) {
+                    Text("Tiếp tục")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showContinueDialog = false
+                        // Phát từ đầu nếu người dùng không muốn tiếp tục
+                        viewModel.addHistory(firebase_uid ?: "", movie_id, "00:00:00")
+                    }
+                ) {
+                    Text("Xem từ đầu")
+                }
+            }
+        )
+    }
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .verticalScroll(scrollState) // Để nội dung cuộn
+            .verticalScroll(scrollState)
     ) {
-        // Trailer video (giữ cố định ở trên)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(260.dp)
-                .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
+                .then(
+                    if (isPlayingVideo)
+                        Modifier.aspectRatio(16f / 9f)
+                    else
+                        Modifier.height(260.dp)
+                )
         ) {
-            @UnstableApi
             VideoTrailer(
-                videoUrl = trailer_url ?: "",
-                posterUrl = poster_url ?: ""
+                videoUrl = if (isPlayingVideo) video_url ?: "" else trailer_url ?: "",
+                posterUrl = poster_url ?: "",
+                isPlayingVideo = isPlayingVideo,
+                initialProgress = if (isPlayingVideo) historyProgress else null,
+                onProgressUpdate = { progress ->
+                    if (isPlayingVideo) {
+                        viewModel.addHistory(firebase_uid ?: "", movie_id, progress)
+                    }
+                }
             )
 
-            // Nút quay lại
             IconButton(
                 onClick = { activity?.finish() },
                 modifier = Modifier
@@ -137,15 +181,11 @@ fun DetailMovieScreen(
                 )
             }
 
-            // Nút yêu thích
             IconButton(
                 onClick = {
                     currentUser?.uid?.let { uid ->
-                        if (isFavorite) {
-                            viewModel.removeFavorite(uid, movie_id)
-                        } else {
-                            viewModel.addFavorite(uid, movie_id)
-                        }
+                        if (isFavorite) viewModel.removeFavorite(uid, movie_id)
+                        else viewModel.addFavorite(uid, movie_id)
                     } ?: run {
                         Toast.makeText(context, "Bạn cần đăng nhập để yêu thích", Toast.LENGTH_SHORT).show()
                     }
@@ -157,9 +197,7 @@ fun DetailMovieScreen(
                 Icon(
                     painter = painterResource(
                         id = if (isFavorite)
-                            R.drawable.fav
-                        else
-                            R.drawable.baseline_favorite_border_24
+                            R.drawable.fav else R.drawable.baseline_favorite_border_24
                     ),
                     contentDescription = "Favorite",
                     tint = Color.White,
@@ -167,16 +205,14 @@ fun DetailMovieScreen(
                 )
             }
         }
-        // Tiêu đề, đánh giá và icon play
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title ?: "",
                     fontWeight = FontWeight(550),
@@ -184,10 +220,7 @@ fun DetailMovieScreen(
                     fontSize = 24.sp,
                 )
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
                     Icon(
                         painter = painterResource(R.drawable.star),
                         contentDescription = "Rating",
@@ -216,9 +249,17 @@ fun DetailMovieScreen(
                 }
             }
 
-            // Icon Play
             IconButton(
-                onClick = { /* TODO: Play action */ },
+                onClick = {
+                    if (!isPlayingVideo) {
+                        // Chỉ kiểm tra nếu chưa phát video
+                        if (isHistory && historyProgress != null) {
+                            showContinueDialog = true
+                        } else {
+                            isPlayingVideo = true
+                        }
+                    }
+                          },
                 modifier = Modifier.size(60.dp)
             ) {
                 Icon(
@@ -230,7 +271,6 @@ fun DetailMovieScreen(
             }
         }
 
-        // Mô tả
         SectionTitle(title = "Mô tả")
         Text(
             text = description ?: "",
@@ -243,17 +283,13 @@ fun DetailMovieScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        // Thể loại
         SectionTitle(title = "Thể loại")
         GenreTagList(genres = genres?.split(",") ?: listOf("Không rõ"))
 
-        // Diễn viên
         SectionTitle(title = "Diễn viên")
         CastTagList(castList = actors?.split(",") ?: listOf("Không rõ"))
 
-        // Bình luận & Đánh giá
         SectionTitle(title = "Bình luận & Đánh giá")
-
         SectionComment(
             ratings = ratings,
             movie_id = movie_id,
@@ -266,3 +302,4 @@ fun DetailMovieScreen(
         )
     }
 }
+

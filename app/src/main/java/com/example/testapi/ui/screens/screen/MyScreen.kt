@@ -30,6 +30,7 @@ import com.example.testapi.controller.auth.AuthManager
 import com.example.testapi.ui.screens.login.LoginActivity
 import com.example.testapi.R
 import com.example.testapi.ui.screens.favmovie.ListFavoriteMovie
+import com.example.testapi.ui.screens.hismovie.ListHistoryMovie
 import com.example.testapi.ui.screens.myinfo.MyInfoActivity
 
 @Composable
@@ -172,7 +173,10 @@ fun MyScreen() {
             )
             MenuItem(
                 title = "Lịch sử xem",
-                onClick = {},
+                onClick = {
+                    val intent = Intent(context, ListHistoryMovie::class.java)
+                    context.startActivity(intent)
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.time),
