@@ -1,9 +1,13 @@
 package com.example.testapi.ui.screens.detailmovie
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -44,6 +48,7 @@ class DetailMovieActivity : ComponentActivity() {
         val actors = intent.getStringExtra("actors")
         val genres = intent.getStringExtra("genres")
         val poster_url = intent.getStringExtra("poster_url")
+        val position = intent.getLongExtra("position", 0L) // Nhận position từ Intent
 
         setContent {
             SystemUIWrapper {
@@ -58,13 +63,13 @@ class DetailMovieActivity : ComponentActivity() {
                     duration = duration,
                     actors = actors,
                     genres = genres,
-                    poster_url = poster_url
+                    poster_url = poster_url,
+                    initialPosition = position // Chuyển position thành định dạng HMS
                 )
             }
         }
     }
 }
-
 
 @Composable
 fun DetailMovieScreen(
@@ -78,7 +83,8 @@ fun DetailMovieScreen(
     duration: Int?,
     actors: String?,
     genres: String?,
-    poster_url: String?
+    poster_url: String?,
+    initialPosition: Long = 0L // Thêm tham số initialPosition
 ) {
     val viewModel: DetailMovieViewModel = viewModel()
     val isFavorite by viewModel.isFavorite.collectAsState()
@@ -94,11 +100,27 @@ fun DetailMovieScreen(
 
     var isPlayingVideo by remember { mutableStateOf(false) }
     var showContinueDialog by remember { mutableStateOf(false) }
+    var currentVideoPosition by remember { mutableStateOf(initialPosition) }
+
+    val fullscreenLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val newPosition = result.data?.getLongExtra("position", 0L) ?: 0L
+            currentVideoPosition = newPosition
+            isPlayingVideo = true
+        }
+    }
+
+    LaunchedEffect(isPlayingVideo) {
+        if (isPlayingVideo) {
+            currentVideoPosition = parseHMSToMillis(historyProgress ?: "00:00:00")
+        }
+    }
 
     LaunchedEffect(movie_id) {
         viewModel.fetchRatings(movie_id)
     }
-
 
     LaunchedEffect(movie_id, currentUser) {
         currentUser?.uid?.let { uid -> viewModel.checkFavorite(uid, movie_id) }
@@ -119,7 +141,7 @@ fun DetailMovieScreen(
                 TextButton(
                     onClick = {
                         showContinueDialog = false
-                        isPlayingVideo = true // Chuyển sang chế độ phát video
+                        isPlayingVideo = true
                     }
                 ) {
                     Text("Tiếp tục")
@@ -129,7 +151,6 @@ fun DetailMovieScreen(
                 TextButton(
                     onClick = {
                         showContinueDialog = false
-                        // Phát từ đầu nếu người dùng không muốn tiếp tục
                         viewModel.addHistory(firebase_uid ?: "", movie_id, "00:00:00")
                     }
                 ) {
@@ -160,9 +181,31 @@ fun DetailMovieScreen(
                 posterUrl = poster_url ?: "",
                 isPlayingVideo = isPlayingVideo,
                 initialProgress = if (isPlayingVideo) historyProgress else null,
+                initialPosition = currentVideoPosition,
                 onProgressUpdate = { progress ->
                     if (isPlayingVideo) {
+                        currentVideoPosition = parseHMSToMillis(progress)
                         viewModel.addHistory(firebase_uid ?: "", movie_id, progress)
+                    }
+                },
+                onFullScreenClick = { pos ->
+                    if (isPlayingVideo) {
+                        val intent = Intent(context, FullscreenVideoActivity::class.java).apply {
+                            putExtra("video_url", video_url)
+                            putExtra("position", pos)
+                            // Truyền tất cả dữ liệu cần thiết
+                            putExtra("movie_id", movie_id)
+                            putExtra("title", title)
+                            putExtra("trailer_url", trailer_url)
+                            putExtra("status", status)
+                            putExtra("averageRating", averageRating ?: 0f)
+                            putExtra("description", description)
+                            putExtra("duration", duration ?: 0)
+                            putExtra("actors", actors)
+                            putExtra("genres", genres)
+                            putExtra("poster_url", poster_url)
+                        }
+                        fullscreenLauncher.launch(intent)
                     }
                 }
             )
@@ -252,14 +295,13 @@ fun DetailMovieScreen(
             IconButton(
                 onClick = {
                     if (!isPlayingVideo) {
-                        // Chỉ kiểm tra nếu chưa phát video
                         if (isHistory && historyProgress != null) {
                             showContinueDialog = true
                         } else {
                             isPlayingVideo = true
                         }
                     }
-                          },
+                },
                 modifier = Modifier.size(60.dp)
             ) {
                 Icon(
@@ -302,4 +344,3 @@ fun DetailMovieScreen(
         )
     }
 }
-

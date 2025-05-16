@@ -17,17 +17,21 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".ui.screens.hismovie.ListHistoryMovie"
-            android:exported="false" />
+            android:name=".ui.screens.detailmovie.FullscreenVideoActivity"
+            android:screenOrientation="unspecified"
+            android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".ui.screens.hismovie.MainActivity"
-            android:exported="false" />
+            android:name=".ui.screens.hismovie.ListHistoryMovie"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.screens.favmovie.ListFavoriteMovie"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.screens.myinfo.MyInfoActivity"
-            android:exported="false" /> <!-- Facebook SDK App ID -->
+            android:exported="false"
+            android:screenOrientation="portrait"/> <!-- Facebook SDK App ID -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
@@ -55,19 +59,25 @@
         </activity> <!-- App Activities -->
         <activity
             android:name=".ui.screens.intro.IntroActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.screens.detailmovie.DetailMovieActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.TestApi"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.screens.screen.MainScreenActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.screens.login.LoginActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:label="@string/app_name"
             android:theme="@style/Theme.TestApi">
             <intent-filter>

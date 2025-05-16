@@ -142,6 +142,7 @@ fun ListFavoriteMovieScreen() {
                                     putExtra("movie_id", movieId)
                                     putExtra("title", movie.title)
                                     putExtra("trailer_url", movie.trailer_url)
+                                    putExtra("video_url", movie.video_url)
                                     putExtra("status", movie.status)
                                     putExtra("averageRating", movie.averageRating ?: 0f)
                                     putExtra("description", movie.description)
