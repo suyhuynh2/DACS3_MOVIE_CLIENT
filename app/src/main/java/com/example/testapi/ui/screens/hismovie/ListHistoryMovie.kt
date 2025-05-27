@@ -1,5 +1,6 @@
 package com.example.testapi.ui.screens.hismovie
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -8,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,7 +35,13 @@ import com.example.testapi.viewmodel.MovieViewModel
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import com.example.testapi.ui.components.CardHisMovie
 import com.example.testapi.ui.components.SearchBar
@@ -52,7 +60,7 @@ class ListHistoryMovie : AppCompatActivity() {
 
 @Composable
 fun ListHistoryMovieScreen() {
-    val content = LocalContext.current
+    val context = LocalContext.current
     val currentUser = FirebaseAuth.getInstance().currentUser
     val firebaseUid = currentUser?.uid
 
@@ -65,16 +73,21 @@ fun ListHistoryMovieScreen() {
     val movieList = movieViewModel.movies.observeAsState(emptyList())
 
     LaunchedEffect(firebaseUid) {
-        movieViewModel.setupPusherConnection(content)
+        movieViewModel.setupPusherConnection(context)
         if (firebaseUid != null) {
             historyViewModel.fetchInitialHistoryMovie(firebaseUid)
             movieViewModel.fetchInitialMovies()
         }
     }
 
+    val (searchQuery, setSearchQuery) = remember { mutableStateOf("") }
+
     val filteredMovies = if (historyList.value.isNotEmpty() && movieList.value.isNotEmpty()) {
+        val movieIdsInHistory = historyList.value.map { it.movie_id }.toSet()
+
         movieList.value.filter { movie ->
-            historyList.value.any { it.movie_id == movie.movie_id }
+            movie.movie_id in movieIdsInHistory &&
+                    movie.title.contains(searchQuery, ignoreCase = true)
         }
     } else {
         emptyList()
@@ -89,16 +102,32 @@ fun ListHistoryMovieScreen() {
         modifier = Modifier.padding(horizontal = 8.dp)
     ) {
         item {
-            BigTitle(
-                title = "Danh sách lịch sử",
-                modifier = Modifier.padding(top = 16.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { (context as? Activity)?.finish() }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.back),
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+                BigTitle(
+                    title = "Danh sách lịch sử",
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         item {
             SearchBar(
                 hint = "Tìm kiếm phim...",
-                modifier = Modifier.padding(top = 16.dp)
+                modifier = Modifier.padding(top = 16.dp),
+                query = "",
+                onQueryChanged = {}
             )
         }
 
@@ -137,7 +166,7 @@ fun ListHistoryMovieScreen() {
                         poster_Url = movie.poster_url,
                         movie_id = movie.movie_id,
                         onClick = {
-                            val intent = Intent(content, DetailMovieActivity::class.java).apply {
+                            val intent = Intent(context, DetailMovieActivity::class.java).apply {
                                 putExtra("movie_id", movie.movie_id)
                                 putExtra("title", movie.title)
                                 putExtra("trailer_url", movie.trailer_url)
@@ -150,7 +179,7 @@ fun ListHistoryMovieScreen() {
                                 putExtra("genres", movie.genres?.joinToString(", ") { it.name })
                                 putExtra("poster_url", movie.poster_url)
                             }
-                            content.startActivity(intent)
+                            context.startActivity(intent)
                         }
                     )
                     Spacer(modifier = Modifier.height(16.dp))

@@ -20,16 +20,17 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.testapi.R
 import com.example.testapi.data.mode_data.Users
 import com.example.testapi.data.repository.UsersRepository
 import com.example.testapi.ui.components.SystemUIWrapper
 import kotlinx.coroutines.launch
+import com.example.testapi.viewmodel.UserViewModel
+import androidx.compose.runtime.livedata.observeAsState
 
 class MyInfoActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,15 +91,37 @@ fun MyInfoScreen(
     role: String,
     loginProvider: String,
 ) {
-    var tempUsername by remember { mutableStateOf(initialUsername) }
     val context = LocalContext.current
-    val activity = context as? Activity
-    val scope = rememberCoroutineScope()
-    val repository = remember { UsersRepository() }
+    val userViewModel: UserViewModel = viewModel()
+    val user by userViewModel.userLiveData.observeAsState() // Quan sát LiveData
+
+    // Khởi tạo các giá trị ban đầu
+    var tempUsername by remember { mutableStateOf(initialUsername) }
+    var currentUsername by remember { mutableStateOf(initialUsername) }
+    var currentEmail by remember { mutableStateOf(email) }
+    var currentRole by remember { mutableStateOf(role) }
+    var currentProvider by remember { mutableStateOf(loginProvider) }
+
+    // Cập nhật UI khi userLiveData thay đổi
+    LaunchedEffect(user) {
+        user?.let {
+            currentUsername = it.name
+            currentEmail = it.email
+            currentRole = it.role
+            currentProvider = it.provider
+            tempUsername = it.name // Đồng bộ tempUsername với dữ liệu mới
+        }
+    }
+
+    // Thiết lập kết nối Pusher
+    LaunchedEffect(Unit) {
+        userViewModel.setupPusherConnection(context, firebaseUid)
+    }
 
     fun saveUserToSharedPreferences(user: Users) {
         val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         with(sharedPreferences.edit()) {
+            putString("user_id", user.firebase_uid)
             putString("user_name", user.name)
             putString("user_email", user.email)
             putString("user_role", user.role)
@@ -107,6 +130,9 @@ fun MyInfoScreen(
         }
     }
 
+    val activity = context as? Activity
+    val scope = rememberCoroutineScope()
+    val repository = remember { UsersRepository() }
 
     Box(
         modifier = Modifier
@@ -122,9 +148,7 @@ fun MyInfoScreen(
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                IconButton(
-                    onClick = { activity?.finish() }
-                ) {
+                IconButton(onClick = { activity?.finish() }) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_arrow_back_24),
                         contentDescription = "Back",
@@ -161,7 +185,7 @@ fun MyInfoScreen(
                 modifier = Modifier.padding(start = 16.dp)
             )
             Text(
-                text = email,
+                text = currentEmail,
                 color = Color.LightGray,
                 fontSize = 18.sp,
                 modifier = Modifier.padding(start = 32.dp)
@@ -174,7 +198,7 @@ fun MyInfoScreen(
                 modifier = Modifier.padding(start = 16.dp)
             )
             Text(
-                text = role,
+                text = currentRole,
                 color = Color.LightGray,
                 fontSize = 18.sp,
                 modifier = Modifier.padding(start = 32.dp)
@@ -187,7 +211,7 @@ fun MyInfoScreen(
                 modifier = Modifier.padding(start = 16.dp)
             )
             Text(
-                text = loginProvider,
+                text = currentProvider,
                 color = Color.LightGray,
                 fontSize = 18.sp,
                 modifier = Modifier.padding(start = 32.dp)
@@ -198,23 +222,23 @@ fun MyInfoScreen(
             Button(
                 onClick = {
                     scope.launch {
-                    val updatedUser = Users(
-                        firebase_uid = firebaseUid,
-                        email = email,
-                        name = tempUsername,
-                        provider = loginProvider,
-                        role = role
-                    )
-                    val result = repository.updateUser(updatedUser)
-                    if (result.isSuccess) {
-                        saveUserToSharedPreferences(updatedUser)
-                        Toast.makeText(context, "Cập nhật thành công", Toast.LENGTH_SHORT).show()
-                        activity?.finish()
-                    } else {
-                        Toast.makeText(context, "Cập nhật thất bại", Toast.LENGTH_SHORT).show()
+                        val updatedUser = Users(
+                            firebase_uid = firebaseUid,
+                            email = currentEmail,
+                            name = tempUsername,
+                            provider = currentProvider,
+                            role = currentRole
+                        )
+                        val result = repository.updateUser(updatedUser)
+                        if (result.isSuccess) {
+                            saveUserToSharedPreferences(updatedUser)
+                            Toast.makeText(context, "Cập nhật thành công", Toast.LENGTH_SHORT).show()
+                            activity?.finish()
+                        } else {
+                            Toast.makeText(context, "Cập nhật thất bại", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                }
-                          },
+                },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .fillMaxWidth(0.6f)
@@ -230,15 +254,4 @@ fun MyInfoScreen(
             }
         }
     }
-}
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 800)
-@Composable
-fun MyInfoPreview() {
-    MyInfoScreen(
-        initialUsername = "user8000",
-        email = "buivanmien20111968@gmail.com",
-        role = "FREE",
-        loginProvider = "google",
-    )
 }

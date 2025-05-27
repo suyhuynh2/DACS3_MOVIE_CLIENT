@@ -36,7 +36,7 @@ fun BottomNavigationBar(
             val screen = when (bottomMenuItem.label) {
                 "Home" -> Screen.Home
                 "Tôi" -> Screen.Profile
-                "Phim" -> Screen.MenuMovie
+                "Kho phim" -> Screen.MenuMovie
                 else -> Screen.Home
             }
 
@@ -81,7 +81,7 @@ fun prepareButtomMenu(): List<BottomMenuItem> {
             icon = painterResource(id = R.drawable.btn_1)
         ),
         BottomMenuItem(
-            label = "Phim",
+            label = "Kho phim",
             icon = painterResource(id = R.drawable.grid_view)
         ),
         BottomMenuItem(

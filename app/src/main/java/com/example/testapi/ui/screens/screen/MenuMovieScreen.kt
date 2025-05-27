@@ -1,5 +1,6 @@
 package com.example.testapi.ui.screens.screen
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,6 +16,8 @@ import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -24,6 +27,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.testapi.ui.components.BigTitle
 import com.example.testapi.ui.components.FilmItem
 import com.example.testapi.ui.components.ListGenres
+import com.example.testapi.ui.components.SearchBar
+import com.example.testapi.ui.screens.detailmovie.DetailMovieActivity
 import com.example.testapi.viewmodel.GenresViewModel
 import com.example.testapi.viewmodel.MovieViewModel
 
@@ -51,6 +56,8 @@ fun MenuMovieScreen(
     // Đảm bảo fetch dữ liệu phim
     val context = LocalContext.current
 
+    val (searchQuery, setSearchQuery) = remember { mutableStateOf("") }
+
     LaunchedEffect(Unit) {
         genresViewModel.setupPusherConnection(context)
         movieViewModel.setupPusherConnection(context)
@@ -71,17 +78,25 @@ fun MenuMovieScreen(
             }
 
             item {
+                SearchBar(
+                    hint = "Tìm Kiếm phim",
+                    modifier = Modifier.padding(top = 8.dp),
+                    query = searchQuery,
+                    onQueryChanged = setSearchQuery
+                )
+            }
+
+            item {
                 Divider(
                     color = Color(0xFF5B5353),
                     thickness = 1.dp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 4.dp)
+                        .padding(top = 8.dp)
                 )
             }
 
             item {
-                // Hiển thị danh sách thể loại theo dữ liệu từ GenresViewModel
                 ListGenres(
                     genres = listOf("Toàn bộ khu vực", "Việt Nam", "Nhật Bản", "Hàn Quốc", "Mỹ", "Trung Quốc"),
                     selectedGenres = genresViewModel.selectedRegion,
@@ -112,7 +127,7 @@ fun MenuMovieScreen(
 
             item {
                 ListGenres(
-                    genres = listOf("Toàn bộ các thập niên", "2025", "2024", "2023", "2022", "2021"),
+                    genres = listOf("Toàn bộ các thập niên", "2025", "2024", "2023", "2022", "2021", "2020", "Các năm trước"),
                     selectedGenres = genresViewModel.selectedYear,
                     onGenresSelected = { selected -> genresViewModel.selectedYear = selected },
                     modifier = Modifier.padding(top = 12.dp, start = 8.dp)
@@ -121,7 +136,7 @@ fun MenuMovieScreen(
 
             item {
                 ListGenres(
-                    genres = listOf("Độ hot", "Mới nhất"),
+                    genres = listOf("Mới nhất", "Hot nhất"),
                     selectedGenres = genresViewModel.selectedHotness,
                     onGenresSelected = { selected -> genresViewModel.selectedHotness = selected },
                     modifier = Modifier.padding(top = 12.dp, start = 8.dp)
@@ -139,7 +154,37 @@ fun MenuMovieScreen(
             }
 
             item {
-                // Hiển thị danh sách phim
+                val filteredMovies = movieList.filter { movie ->
+                    val regionMatch = genresViewModel.selectedRegion == "Toàn bộ khu vực" ||
+                            movie.country.equals(genresViewModel.selectedRegion, ignoreCase = true)
+
+                    val genreMatch = genresViewModel.selectedGenre == "Toàn bộ thể loại" ||
+                            movie.genres?.any { it.name.equals(genresViewModel.selectedGenre, ignoreCase = true) } == true
+
+                    val paymentMatch = genresViewModel.selectedPayment == "Toàn bộ các loại trả phí" ||
+                            (genresViewModel.selectedPayment == "VIP" && movie.status == "1") ||
+                            (genresViewModel.selectedPayment == "Free" && movie.status == "0")
+
+                    val yearMatch = when (genresViewModel.selectedYear) {
+                        "Toàn bộ các thập niên" -> true
+                        "Các năm trước" -> movie.release_year?.let { it < 2020 } == true
+                        else -> movie.release_year?.toString()?.contains(genresViewModel.selectedYear) == true
+                    }
+
+                    val hotnessMatch = genresViewModel.selectedHotness == "Mới nhất" || genresViewModel.selectedHotness == "Hot nhất"
+
+                    val searchMatch = searchQuery.isBlank() ||
+                            movie.title.contains(searchQuery, ignoreCase = true)
+
+                    regionMatch && genreMatch && paymentMatch && yearMatch && hotnessMatch && searchMatch
+                }
+
+                val sortedMovies = if (genresViewModel.selectedHotness == "Hot nhất") {
+                    filteredMovies.sortedByDescending { (it.views ?: 0) + (it.averageRating ?: 0f).toInt() }
+                } else {
+                    filteredMovies
+                }
+
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     modifier = Modifier
@@ -147,14 +192,29 @@ fun MenuMovieScreen(
                         .height(450.dp),
                     contentPadding = PaddingValues(8.dp)
                 ) {
-                    items(movieList) { movie ->
+                    items(sortedMovies) { movie ->
                         FilmItem(
-                            movie_id = movie.movie_id, // Thêm movie_id
+                            movie_id = movie.movie_id,
                             title = movie.title,
                             poster_url = movie.poster_url,
                             status = movie.status ?: "Free",
                             averageRating = movie.averageRating ?: 0f,
-                            onClick = {}
+                            onClick = {
+                                val intent = Intent(context, DetailMovieActivity::class.java).apply {
+                                    putExtra("movie_id", movie.movie_id)
+                                    putExtra("title", movie.title)
+                                    putExtra("trailer_url", movie.trailer_url)
+                                    putExtra("video_url", movie.video_url)
+                                    putExtra("poster_url", movie.poster_url)
+                                    putExtra("status", movie.status)
+                                    putExtra("averageRating", movie.averageRating ?: 0f)
+                                    putExtra("description", movie.description)
+                                    putExtra("duration", movie.duration)
+                                    putExtra("actors", movie.actors)
+                                    putExtra("genres", movie.genres?.joinToString(",") { it.name })
+                                }
+                                context.startActivity(intent)
+                            }
                         )
                     }
                 }

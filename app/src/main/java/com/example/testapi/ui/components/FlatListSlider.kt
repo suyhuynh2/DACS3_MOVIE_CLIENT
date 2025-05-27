@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +44,7 @@ fun SlideComponentUniversal(
         modifier = modifier
             .fillMaxWidth()
             .height(216.dp)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(vertical = 8.dp)
     ) {
         if (slides.isNotEmpty()) {
             if (slides.size > 1) {
@@ -55,7 +54,6 @@ fun SlideComponentUniversal(
                         .width(80.dp)
                         .height(120.dp)
                         .align(Alignment.CenterStart)
-                        .clip(RoundedCornerShape(8.dp))
                 )
                 SlideImage(
                     slide = slides[(pagerState.currentPage + 1) % slides.size],
@@ -63,7 +61,6 @@ fun SlideComponentUniversal(
                         .width(80.dp)
                         .height(120.dp)
                         .align(Alignment.CenterEnd)
-                        .clip(RoundedCornerShape(8.dp))
                 )
             }
 
@@ -72,7 +69,6 @@ fun SlideComponentUniversal(
                     .fillMaxWidth()
                     .height(200.dp)
                     .align(Alignment.Center)
-                    .clip(RoundedCornerShape(16.dp))
             ) {
                 HorizontalPager(
                     state = pagerState,

@@ -1,7 +1,9 @@
 package com.example.testapi.ui.screens.detailmovie
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -97,10 +99,13 @@ fun DetailMovieScreen(
     val currentUser = FirebaseAuth.getInstance().currentUser
     val firebase_uid = currentUser?.uid
     val username = currentUser?.displayName ?: "Ẩn danh"
+    val userRole by viewModel.userRole.collectAsState()
 
+    var currentUserRole by remember { mutableStateOf(userRole) }
     var isPlayingVideo by remember { mutableStateOf(false) }
     var showContinueDialog by remember { mutableStateOf(false) }
     var currentVideoPosition by remember { mutableStateOf(initialPosition) }
+    var showUpgradeDialog by remember { mutableStateOf(false) }
 
     val fullscreenLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -109,6 +114,21 @@ fun DetailMovieScreen(
             val newPosition = result.data?.getLongExtra("position", 0L) ?: 0L
             currentVideoPosition = newPosition
             isPlayingVideo = true
+        }
+    }
+
+    DisposableEffect(Unit) {
+        val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        currentUserRole = sharedPreferences.getString("user_role", "FREE") ?: "FREE"
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
+            if (key == "user_role") {
+                currentUserRole = prefs.getString("user_role", "FREE") ?: "FREE"
+            }
+        }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+
+        onDispose {
+            sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
         }
     }
 
@@ -123,12 +143,14 @@ fun DetailMovieScreen(
     }
 
     LaunchedEffect(movie_id, currentUser) {
-        currentUser?.uid?.let { uid -> viewModel.checkFavorite(uid, movie_id) }
-    }
-
-    LaunchedEffect(movie_id, currentUser) {
         currentUser?.uid?.let { uid ->
+            viewModel.checkFavorite(uid, movie_id)
             viewModel.fetchHistory(uid, movie_id)
+        }
+    }
+    LaunchedEffect(currentUser) {
+        currentUser?.uid?.let { uid ->
+            viewModel.fetchUserRole(uid)
         }
     }
 
@@ -155,6 +177,24 @@ fun DetailMovieScreen(
                     }
                 ) {
                     Text("Xem từ đầu")
+                }
+            }
+        )
+    }
+
+    if (showUpgradeDialog) {
+        AlertDialog(
+            onDismissRequest = { showUpgradeDialog = false },
+            title = { Text("Nâng cấp tài khoản") },
+            text = { Text("Bạn cần nâng cấp tài khoản để xem phim này.") },
+            confirmButton = {
+                TextButton(onClick = { showUpgradeDialog = false }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUpgradeDialog = false }) {
+                    Text("Đóng")
                 }
             }
         )
@@ -294,11 +334,15 @@ fun DetailMovieScreen(
 
             IconButton(
                 onClick = {
-                    if (!isPlayingVideo) {
-                        if (isHistory && historyProgress != null) {
-                            showContinueDialog = true
-                        } else {
-                            isPlayingVideo = true
+                    if (status == "1" && currentUserRole == "FREE") {
+                        showUpgradeDialog = true
+                    } else {
+                        if (!isPlayingVideo) {
+                            if (isHistory && historyProgress != null) {
+                                showContinueDialog = true
+                            } else {
+                                isPlayingVideo = true
+                            }
                         }
                     }
                 },
@@ -340,7 +384,9 @@ fun DetailMovieScreen(
             onCommentSubmit = { newRating ->
                 viewModel.addRating(firebase_uid ?: "", movie_id, newRating.score, newRating.comment ?: "")
             },
-            viewModel = viewModel
+            viewModel = viewModel,
+            movieStatus = status,
+            userRole = currentUserRole
         )
     }
 }

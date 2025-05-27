@@ -59,9 +59,6 @@ fun HomeScreen(viewModel: MovieViewModel = viewModel()) {
                 .fillMaxSize()
                 .padding(top = 10.dp)
         ) {
-            // Ô tìm kiếm
-            SearchBar(hint = "Tìm kiếm...")
-
             // Slider ảnh
             val slideRes = listOf(
                 SlideData.Url("https://cinema.mu/wp-content/uploads/2019/07/banner-films.jpg"),

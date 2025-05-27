@@ -67,7 +67,6 @@ class FullscreenVideoActivity : ComponentActivity() {
                     volume = 1f
                     addListener(object : Player.Listener {
                         override fun onPlayerError(error: PlaybackException) {
-                            Toast.makeText(context, "Error playing video", Toast.LENGTH_LONG).show()
                             finish()
                         }
                     })
@@ -138,7 +137,7 @@ class FullscreenVideoActivity : ComponentActivity() {
     }
     private fun getFinalUrl(url: String): String {
         val streamUrl = if (url.endsWith(".mp4")) url else "$url.mp4"
-        return "http://192.168.1.6:8080/movie-trailer/$streamUrl"
+        return "http://192.168.1.9:8080/movie-trailer/$streamUrl"
     }
 
     override fun onBackPressed() {

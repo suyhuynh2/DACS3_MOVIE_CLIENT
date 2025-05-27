@@ -1,5 +1,6 @@
 package com.example.testapi.ui.screens.favmovie
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -7,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,7 +35,14 @@ import com.example.testapi.viewmodel.ListFavoriteViewModelFactory
 import com.example.testapi.viewmodel.MovieViewModel
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
+import com.example.testapi.R
 import com.example.testapi.ui.screens.detailmovie.DetailMovieActivity
 
 class ListFavoriteMovie : AppCompatActivity() {
@@ -45,12 +54,6 @@ class ListFavoriteMovie : AppCompatActivity() {
             }
         }
     }
-}
-
-@Composable
-@Preview(showBackground = true, heightDp = 800, widthDp = 360,backgroundColor = 0x00000000)
-fun ListFavoriteMoviePreview() {
-    ListFavoriteMovieScreen()
 }
 
 @Composable
@@ -75,9 +78,13 @@ fun ListFavoriteMovieScreen() {
         }
     }
 
+    val (searchQuery, setSearchQuery) = remember { mutableStateOf("") }
+
+
     val filteredMovies = if (favoriteList.value.isNotEmpty() && movieList.value.isNotEmpty()) {
         movieList.value.filter { movie ->
-            favoriteList.value.any { it.movie_id == movie.movie_id }
+            favoriteList.value.any { it.movie_id == movie.movie_id } &&
+                    movie.title.contains(searchQuery, ignoreCase = true)
         }
     } else {
         emptyList()
@@ -91,18 +98,26 @@ fun ListFavoriteMovieScreen() {
         LazyColumn(
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
-            item {
-                BigTitle(
-                    title = "Danh sách yêu thích",
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
 
             item {
-                SearchBar(
-                    hint = "Tìm kiếm phim...",
-                    modifier = Modifier.padding(top = 16.dp)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { (context as? Activity)?.finish() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.back),
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                    BigTitle(
+                        title = "Danh sách yêu thích",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
 
             item {

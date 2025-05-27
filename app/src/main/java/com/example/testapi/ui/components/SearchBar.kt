@@ -19,13 +19,12 @@ import androidx.compose.ui.unit.sp
 import com.example.testapi.R
 
 @Composable
-@Preview(showBackground = true)
 fun SearchBar(
     hint: String = "",
-    modifier: Modifier = Modifier
-    ) {
-    var text by remember { mutableStateOf("") }
-
+    modifier: Modifier = Modifier,
+    query: String,
+    onQueryChanged: (String) -> Unit
+) {
     Row(
         modifier = modifier
             .padding(horizontal = 16.dp)
@@ -39,8 +38,8 @@ fun SearchBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         BasicTextField(
-            value = text,
-            onValueChange = { text = it },
+            value = query,
+            onValueChange = onQueryChanged,
             singleLine = true,
             textStyle = TextStyle(
                 color = Color.White,
@@ -53,7 +52,7 @@ fun SearchBar(
                         .fillMaxHeight(),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    if (text.isEmpty()) {
+                    if (query.isEmpty()) {
                         Text(
                             text = hint,
                             color = Color(0xffbdbdbd),

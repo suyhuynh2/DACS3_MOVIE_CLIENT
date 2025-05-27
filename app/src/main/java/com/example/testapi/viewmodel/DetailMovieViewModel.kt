@@ -8,6 +8,7 @@ import com.example.testapi.data.mode_data.Rating
 import com.example.testapi.data.repository.FavoriteRepository
 import com.example.testapi.data.repository.HistoryRepository
 import com.example.testapi.data.repository.RatingRepository
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -37,6 +38,8 @@ class DetailMovieViewModel: ViewModel() {
 
     private val _ratingSuccess = MutableStateFlow<Boolean?>(null)
     val ratingSuccess: StateFlow<Boolean?> = _ratingSuccess
+
+    val userRole = MutableStateFlow("")
 
     fun addFavorite(firebaseUid: String, movieId: Int) {
         viewModelScope.launch {
@@ -143,6 +146,13 @@ class DetailMovieViewModel: ViewModel() {
             } else {
                 _errorMessage.value = result.exceptionOrNull()?.message
             }
+        }
+    }
+
+    fun fetchUserRole(uid: String) {
+        val database = FirebaseDatabase.getInstance().getReference("users").child(uid)
+        database.child("role").get().addOnSuccessListener {
+            userRole.value = it.getValue(String::class.java) ?: "FREE"
         }
     }
 
