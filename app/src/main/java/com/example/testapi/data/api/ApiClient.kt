@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
 
     private fun getBaseUrl(): String {
-        return "http://192.168.1.9:8000/api/"
+        return "http://192.168.4.195:8000/api/"
     }
 
     val apiService: ApiService by lazy {

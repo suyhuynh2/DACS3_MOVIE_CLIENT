@@ -6,6 +6,8 @@ import com.example.testapi.data.mode_data.Favorite
 import com.example.testapi.data.mode_data.Genres
 import com.example.testapi.data.mode_data.History
 import com.example.testapi.data.mode_data.Movie
+import com.example.testapi.data.mode_data.PaymentRequest
+import com.example.testapi.data.mode_data.PaymentResponse
 import com.example.testapi.data.mode_data.Rating
 import com.example.testapi.data.mode_data.Users
 import okhttp3.ResponseBody
@@ -15,6 +17,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 import retrofit2.http.Streaming
 
 interface ApiService {
@@ -90,6 +93,12 @@ interface ApiService {
     suspend fun streamVideo(
         @Path("videoName") videoName: String
     ): Response<ResponseBody>
+
+    //Payment
+    @POST("payment/create")
+    suspend fun createPayment(
+        @Body request: PaymentRequest
+    ): Response<PaymentResponse>
 
 
 }

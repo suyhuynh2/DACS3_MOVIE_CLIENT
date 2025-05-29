@@ -34,7 +34,7 @@ fun VideoTrailer(
     val streamUrl = remember(videoUrl) {
         if (videoUrl.isEmpty()) "" else {
             val nameWithExt = if (videoUrl.endsWith(".mp4")) videoUrl else "$videoUrl.mp4"
-            "http://192.168.1.9:8080/movie-trailer/$nameWithExt"
+            "http://192.168.4.195:8080/movie-trailer/$nameWithExt"
         }
     }
 

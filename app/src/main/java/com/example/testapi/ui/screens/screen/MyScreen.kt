@@ -32,6 +32,7 @@ import com.example.testapi.R
 import com.example.testapi.ui.screens.favmovie.ListFavoriteMovie
 import com.example.testapi.ui.screens.hismovie.ListHistoryMovie
 import com.example.testapi.ui.screens.myinfo.MyInfoActivity
+import com.example.testapi.ui.screens.payment.PaymentActivity
 
 @Composable
 fun MyScreen() {
@@ -188,7 +189,10 @@ fun MyScreen() {
             )
             MenuItem(
                 title = "Nâng cấp tài khoản",
-                onClick = {},
+                onClick = {
+                    val intent = Intent(context, PaymentActivity::class.java)
+                    context.startActivity(intent)
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_diamond_24),

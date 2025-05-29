@@ -137,7 +137,7 @@ class FullscreenVideoActivity : ComponentActivity() {
     }
     private fun getFinalUrl(url: String): String {
         val streamUrl = if (url.endsWith(".mp4")) url else "$url.mp4"
-        return "http://192.168.1.9:8080/movie-trailer/$streamUrl"
+        return "http://192.168.4.195:8080/movie-trailer/$streamUrl"
     }
 
     override fun onBackPressed() {

@@ -102,4 +102,7 @@ dependencies {
     implementation("com.facebook.android:facebook-android-sdk:16.3.0")
     implementation("com.facebook.android:facebook-login:16.3.0")
 
+    implementation("com.google.zxing:core:3.5.2")
+
+
 }

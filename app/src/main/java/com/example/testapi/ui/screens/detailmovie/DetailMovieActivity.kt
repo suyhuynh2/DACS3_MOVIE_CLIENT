@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.testapi.ui.components.*
 import com.example.testapi.R
+import com.example.testapi.ui.screens.payment.PaymentActivity
 import com.example.testapi.viewmodel.DetailMovieViewModel
 import com.google.firebase.auth.FirebaseAuth
 
@@ -188,7 +189,10 @@ fun DetailMovieScreen(
             title = { Text("Nâng cấp tài khoản") },
             text = { Text("Bạn cần nâng cấp tài khoản để xem phim này.") },
             confirmButton = {
-                TextButton(onClick = { showUpgradeDialog = false }) {
+                TextButton(onClick = {
+                    val intent = Intent(context, PaymentActivity::class.java)
+                    context.startActivity(intent)
+                }) {
                     Text("OK")
                 }
             },
